@@ -1,0 +1,9 @@
+schema_version: 1
+
+name: licenses
+version: 1.0
+description: "Add & Generate licenses directory"
+
+execute:
+- script: configure.sh
+- script: license.sh

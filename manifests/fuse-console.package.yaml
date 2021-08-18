@@ -1,0 +1,4 @@
+packageName: fuse-console
+channels:
+- currentCSV: fuse-console.v7.7.0
+  name: alpha

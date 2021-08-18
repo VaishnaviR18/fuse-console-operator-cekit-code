@@ -1,0 +1,62 @@
+- name: "builder"
+  from: "registry-proxy.engineering.redhat.com/rh-osbs/rhel8/go-toolset"
+  version: "1.0"
+
+  modules:
+    repositories:
+      - name: modules
+        path: modules
+    install:
+      - name: licenses
+
+  run:
+    workdir: $REMOTE_SOURCE_DIR/app
+    cmd:
+      - "/bin/bash"
+      - "-lc"
+      - "go build -mod vendor -o /tmp/hawtio-operator -ldflags \"-X main.ImageRepository=registry.redhat.io/fuse7/fuse-console-rhel8 -X main.ServerRootDirectory=/opt/app-root/src -X main.ClientCertCommonName=fuse-console.fuse.svc -X 'main.LegacyServingCertificateMountVersion=< 1.5.0'\" ./cmd/manager/main.go"      
+ 
+
+#final image
+
+- name: &name "fuse7/fuse-console-rhel8-operator"
+  from: "registry-proxy.engineering.redhat.com/rh-osbs/ubi8/ubi-minimal"
+  version: &version "1.9"
+  description: "Kubernetes operator, based on the Operator SDK, that operates the Fuse console."
+
+  labels:
+  - name: "com.redhat.component"
+    value: "fuse-console-rhel-8-operator-container"
+  - name: "maintainer"
+    value: "Otavio Piske <opiske@redhat.com>"   
+  - name: "io.k8s.display-name"
+    value: "Red Hat Fuse Console Operator"
+  - name: "io.openshift.tags"
+    value: "fuse,hawtio,operator"
+
+  artifacts:
+  - image: builder
+    path: /tmp/hawtio-operator
+    dest: /usr/local/bin/hawtio-operator
+
+  - image: builder
+    path: $REMOTE_SOURCE_DIR/app/licenses
+    dest: /root/licenses/fuse-hawtio-operator/licenses
+
+  - name: config
+    path: config
+    dest: /config
+
+  - name: manifests
+    path: manifests
+    dest: /manifests    
+
+  run: 
+    user: 998
+
+#osbs:
+ # configuration:
+  #  container_file: container.yaml
+   #   repository:
+    #        name: containers/fuse-console-operator
+     #       branch: private-devel-fuse-7.9-openshift-rhel-8
